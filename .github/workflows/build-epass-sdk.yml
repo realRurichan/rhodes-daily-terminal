@@ -1,0 +1,37 @@
+name: Build ePass ARM SDK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  toolchain:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Buildroot dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc build-essential fakeroot libncurses-dev libpython3-dev libssl-dev mtd-utils swig unzip wget
+      - name: Fetch official Buildroot
+        run: git clone --depth 1 https://github.com/rhodesepass/buildroot.git "$RUNNER_TEMP/buildroot"
+      - name: Normalize upstream text files
+        run: python3 tools/normalize_crlf_tree.py "$RUNNER_TEMP/buildroot"
+      - name: Configure and build ARM toolchain
+        working-directory: ${{ runner.temp }}/buildroot
+        run: |
+          make rhodesisland_epass_defconfig
+          make toolchain -j"$(nproc)"
+      - name: Archive relocatable SDK
+        working-directory: ${{ runner.temp }}/buildroot
+        run: |
+          tar --zstd -cf "$RUNNER_TEMP/epass-arm-sdk.tar.zst" output/host output/staging .config
+          sha256sum "$RUNNER_TEMP/epass-arm-sdk.tar.zst" > "$RUNNER_TEMP/epass-arm-sdk.tar.zst.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: epass-arm-sdk
+          path: |
+            ${{ runner.temp }}/epass-arm-sdk.tar.zst
+            ${{ runner.temp }}/epass-arm-sdk.tar.zst.sha256
+          if-no-files-found: error
+          retention-days: 7
