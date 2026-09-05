@@ -12,20 +12,22 @@ cmake --build build --config Release
 
 按键：`W` 上、`S` 下、`Enter` 确认、`Q` 返回/退出。存档默认写入当前目录的 `daily_terminal.sav`。
 
-## 交叉编译
+## 通行证原生 DRM 版
 
-在已经构建过的通行证 Buildroot 目录中：
+原生版复用官方 `epass-applications` 的 HAL 和 `epass_game`，获得 DRM RGB565 双缓冲显示、物理尺寸适配和自动扫描的四键输入。先取得官方应用源码，然后在已经构建过的通行证 Buildroot 目录中：
 
 ```sh
+git clone https://github.com/rhodesepass/epass-applications.git
 source output/host/environment-setup
 cmake -S /path/to/rhodes-daily-terminal -B /path/to/rhodes-daily-terminal/build-device \
-  -DCMAKE_BUILD_TYPE=Release
+  -DCMAKE_BUILD_TYPE=Release \
+  -DEPASS_NATIVE=ON \
+  -DEPASS_APPLICATIONS_ROOT=/path/to/epass-applications
 cmake --build /path/to/rhodes-daily-terminal/build-device -j$(nproc)
 ```
 
-将 `daily_terminal` 和 `appconfig.json` 放在同一目录，打成 `.tar.gz` 后放入通行证共享分区的 `apps-inbox`。程序默认读取 `/dev/input/event0`；可用 `EPASS_INPUT_DEVICE` 覆盖。可用 `EPASS_SAVE_PATH` 把存档指定到持久化目录。
+将 `daily_terminal` 和 `appconfig.json` 放在同一目录，打成 `.tar.gz` 后放入通行证共享分区的 `apps-inbox`。原生版存档默认写入 `/root/.daily_terminal.sav`，可用 `EPASS_SAVE_PATH` 覆盖。
 
 ## 当前显示后端
 
-当前版本采用 ANSI 终端显示，以便先验证完整玩法和存档。业务逻辑与 `platform.c` 分离；接入设备 DRM/字体渲染时，只需替换 `dt_platform_draw()`，无需改动任务、计时和存档代码。
-
+普通桌面构建采用 ANSI 终端显示；带 `EPASS_NATIVE=ON` 的构建使用官方 Sunxi DRM/evdev 后端。两种显示方式共用同一套任务、计时与存档逻辑。
