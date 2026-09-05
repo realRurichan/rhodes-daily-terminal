@@ -25,7 +25,13 @@ int main(void) {
   assert(dt_save_load(path, &loaded));
   assert(loaded.coins == app.save.coins);
   remove(path);
+  FILE *bad = fopen(path, "wb");
+  assert(bad);
+  fputs("truncated", bad);
+  fclose(bad);
+  memset(&loaded, 0, sizeof(loaded));
+  assert(!dt_save_load(path, &loaded));
+  remove(path);
   puts("all tests passed");
   return 0;
 }
-

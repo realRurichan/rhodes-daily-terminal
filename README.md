@@ -28,6 +28,14 @@ cmake --build /path/to/rhodes-daily-terminal/build-device -j$(nproc)
 
 将 `daily_terminal` 和 `appconfig.json` 放在同一目录，打成 `.tar.gz` 后放入通行证共享分区的 `apps-inbox`。原生版存档默认写入 `/root/.daily_terminal.sav`，可用 `EPASS_SAVE_PATH` 覆盖。
 
+构建完成后可一键生成并校验安装包：
+
+```sh
+sh tools/package_app.sh build-device/daily_terminal
+```
+
+产物位于 `packages/rhodes-daily-terminal-v2.tar.gz`，整个压缩包可以直接复制进 `apps-inbox`。
+
 ## 当前显示后端
 
 普通桌面构建采用 ANSI 终端显示；带 `EPASS_NATIVE=ON` 的构建使用官方 Sunxi DRM/evdev 后端。两种显示方式共用同一套任务、计时与存档逻辑。

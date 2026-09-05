@@ -52,3 +52,10 @@ endif()
 
 install(TARGETS daily_terminal RUNTIME DESTINATION .)
 install(FILES appconfig.json DESTINATION .)
+
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(BUILD_TESTING AND Python3_Interpreter_FOUND)
+  add_test(NAME manifest_validation
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/validate_manifest.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/appconfig.json)
+endif()

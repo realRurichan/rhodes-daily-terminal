@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "app_ver": 2,
   "name": "Rhodes Daily Terminal",
   "uuid": "ebc3d5ab-1e85-4ff1-a6f8-905ac566c71c",
   "type": "fg",
@@ -7,4 +8,3 @@
   "executable": { "file": "daily_terminal" },
   "description": "Focus operations, daily missions and field events"
 }
-
