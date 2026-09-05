@@ -1,0 +1,7 @@
+/build/
+/build-device/
+/build-wsl/
+*.sav
+*.tar.gz
+.vs/
+.vscode/
