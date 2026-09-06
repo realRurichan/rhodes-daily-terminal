@@ -15,6 +15,11 @@ jobs:
           sudo apt-get install -y bc build-essential fakeroot libncurses-dev libpython3-dev libssl-dev mtd-utils swig unzip wget
       - name: Fetch official Buildroot
         run: git clone --depth 1 https://github.com/rhodesepass/buildroot.git "$RUNNER_TEMP/buildroot"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/buildroot/dl
+          key: epass-buildroot-dl-${{ runner.os }}-${{ hashFiles('tools/normalize_crlf_tree.py') }}
+          restore-keys: epass-buildroot-dl-${{ runner.os }}-
       - name: Normalize upstream text files
         run: python3 tools/normalize_crlf_tree.py "$RUNNER_TEMP/buildroot"
       - name: Configure and build ARM toolchain
@@ -25,13 +30,19 @@ jobs:
       - name: Archive relocatable SDK
         working-directory: ${{ runner.temp }}/buildroot
         run: |
-          tar --zstd -cf "$RUNNER_TEMP/epass-arm-sdk.tar.zst" output/host output/staging .config
-          sha256sum "$RUNNER_TEMP/epass-arm-sdk.tar.zst" > "$RUNNER_TEMP/epass-arm-sdk.tar.zst.sha256"
+          support/scripts/fix-rpath host
+          install -m 755 support/misc/relocate-sdk.sh output/host/relocate-sdk.sh
+          mkdir -p output/host/share/buildroot
+          printf '%s\n' "$PWD/output/host" > output/host/share/buildroot/sdk-location
+          tar -czf "$RUNNER_TEMP/epass-arm-sdk.tar.gz" \
+            --owner=0 --group=0 --numeric-owner \
+            --transform='s#^output/host#epass-arm-sdk#' output/host
+          sha256sum "$RUNNER_TEMP/epass-arm-sdk.tar.gz" > "$RUNNER_TEMP/epass-arm-sdk.tar.gz.sha256"
       - uses: actions/upload-artifact@v4
         with:
           name: epass-arm-sdk
           path: |
-            ${{ runner.temp }}/epass-arm-sdk.tar.zst
-            ${{ runner.temp }}/epass-arm-sdk.tar.zst.sha256
+            ${{ runner.temp }}/epass-arm-sdk.tar.gz
+            ${{ runner.temp }}/epass-arm-sdk.tar.gz.sha256
           if-no-files-found: error
           retention-days: 7
