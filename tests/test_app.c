@@ -19,6 +19,15 @@ int main(void) {
   assert(app.save.tasks[0].completed);
   assert(app.save.coins == 1200);
 
+  app.screen = DT_SCREEN_PET;
+  app.cursor = 0;
+  dt_app_handle(&app, DT_KEY_OK, now);
+  assert(app.save.coins == 1100);
+  assert(app.save.pet_hunger == 100);
+  app.screen = DT_SCREEN_EXIT;
+  dt_app_handle(&app, DT_KEY_OK, now);
+  assert(app.quit);
+
   const char *path = "daily_terminal_test.sav";
   assert(dt_save_write(path, &app.save));
   DtSave loaded = {0};

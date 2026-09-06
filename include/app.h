@@ -12,7 +12,9 @@ typedef enum {
   DT_SCREEN_FOCUS,
   DT_SCREEN_TASKS,
   DT_SCREEN_EVENT,
-  DT_SCREEN_STATUS
+  DT_SCREEN_PET,
+  DT_SCREEN_STATUS,
+  DT_SCREEN_EXIT
 } DtScreen;
 
 typedef enum { DT_KEY_NONE, DT_KEY_UP, DT_KEY_DOWN, DT_KEY_OK, DT_KEY_BACK } DtKey;
@@ -28,6 +30,10 @@ typedef struct {
   int coins;
   int streak;
   int pet_mood;
+  int pet_hunger;
+  int pet_energy;
+  int pet_bond;
+  int pet_xp;
   int focus_minutes;
   int focus_running;
   time_t focus_end;
@@ -51,4 +57,3 @@ void dt_app_render(const DtApp *app, char *out, size_t capacity, time_t now);
 void dt_app_set_day(DtApp *app, time_t now);
 
 #endif
-

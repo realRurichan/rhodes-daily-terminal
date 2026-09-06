@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rhodes Daily Terminal</title>
+<style>
+  *{box-sizing:border-box} body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111820;color:#dce7ea;font-family:Consolas,"Microsoft YaHei",monospace}
+  .device{display:flex;align-items:center;gap:18px;padding:22px;border:1px solid #34444b;border-radius:20px;background:#182229;box-shadow:0 24px 70px #0009}
+  .screen{position:relative;width:360px;height:640px;overflow:hidden;background:#0b1014;border:5px solid #050708;box-shadow:inset 0 0 40px #000;padding:24px 20px}
+  .screen:before,.screen:after{content:"";position:absolute;left:0;right:0;height:6px;background:#f5c451}.screen:before{top:0}.screen:after{bottom:0}
+  header{border-bottom:1px solid #34444b;padding-bottom:14px}.brand{color:#f5c451;font-weight:800;letter-spacing:1px}.meta{display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:#91a3aa}
+  main{padding-top:22px}.status{display:flex;justify-content:space-between;color:#73f4c7;font-size:12px}.mood{margin:16px 0 25px}.bar{height:6px;background:#253239;margin-top:7px}.bar i{display:block;height:100%;background:#73f4c7}
+  .menu,.tasks{display:grid;gap:10px}.item{padding:13px 12px;border-left:3px solid #34444b;background:#10171c}.item.selected{color:#10171c;background:#f5c451;border-color:#fff;font-weight:bold}
+  .pet{font-size:72px;text-align:center;margin:12px 0 4px;filter:drop-shadow(0 0 12px #73f4c766)}.petname{text-align:center;color:#f5c451}.stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}.stat{font-size:11px;background:#10171c;padding:7px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.actions .item{padding:9px 7px;font-size:12px}
+  h2{font-size:18px;color:#f5c451;letter-spacing:1px}.clock{text-align:center;font-size:58px;margin:80px 0 60px;color:#fff}.hint{color:#91a3aa;text-align:center;font-size:12px}.notice{margin-top:25px;border-top:1px solid #34444b;padding-top:15px;color:#73f4c7;font-size:13px;line-height:1.5}
+  .keys{display:grid;gap:14px}.keys button{width:66px;height:66px;border:1px solid #52656d;border-radius:50%;background:#222e35;color:#eef5f6;font:700 12px Consolas;cursor:pointer;box-shadow:0 4px 0 #06090a}.keys button:active{transform:translateY(3px);box-shadow:0 1px 0 #06090a}.keys small{text-align:center;color:#71858d}
+  footer{position:absolute;bottom:18px;left:20px;right:20px;text-align:center;font-size:10px;color:#63767d}
+  @media(max-width:520px){.device{transform:scale(.8)}body{overflow:hidden}}
+</style>
+</head>
+<body>
+<div class="device"><section class="screen"><header><div class="brand">RHODES ISLAND // DAILY TERMINAL</div><div class="meta"><span id="day"></span><span id="level"></span><span id="coins"></span></div></header><main id="app"></main><footer>W/S 移动 · Enter 确认 · Q 返回</footer></section><aside class="keys"><button data-key="up">KEY 1<br>▲</button><button data-key="down">KEY 2<br>▼</button><button data-key="ok">KEY 3<br>OK</button><button data-key="back">KEY 4<br>BACK</button><small>PHYSICAL KEYS</small></aside></div>
+<script>
+const menu=['专注行动','每日任务','区域事件','宠物终端','干员状态','退出程序'];
+const events=[
+ {text:'阿米娅发来了一条鼓励消息。',mood:6,bond:2},
+ {text:'一只迷路的源石虫开始跟着你。',mood:4,petXp:3},
+ {text:'可露希尔在控制台下面找到了 37 LMD。',coins:37},
+ {text:'天气晴朗，罗德岛继续前进。',energy:8,mood:3},
+ {text:'PRTS 报告：本次行动成功率为 87%。',coins:120,petXp:2}
+];
+const today=()=>new Date().toISOString().slice(0,10);
+const fresh=()=>({level:1,xp:0,coins:0,streak:1,mood:70,hunger:75,energy:80,bond:0,petXp:0,petName:'小岩',lastPetTick:Date.now(),minutes:25,running:false,end:0,day:today(),tasks:[['完成一次专注行动',false],['确认今天的优先事项',false],['进行一次充分休息',false]]});
+let state;try{state={...fresh(),...JSON.parse(localStorage.rhodesDailyTerminal||'{}')}}catch{state=fresh()}
+if(state.day!==today()){state={...state,day:today(),streak:state.streak+1,tasks:fresh().tasks}}
+let screen=0,cursor=0,notice=''; const save=()=>localStorage.rhodesDailyTerminal=JSON.stringify(state);
+function clamp(v){return Math.max(0,Math.min(100,v))} function petStage(){return state.petXp>=120?'精英源石兽':state.petXp>=40?'活泼源石虫':'幼年源石虫'}
+function petDecay(){let now=Date.now(),hours=Math.floor((now-(state.lastPetTick||now))/3600000);if(hours>0){state.hunger=clamp(state.hunger-hours*3);state.energy=clamp(state.energy-hours*2);if(state.hunger<25||state.energy<20)state.mood=clamp(state.mood-hours*2);state.lastPetTick+=hours*3600000;save()}}
+function tick(){petDecay();if(state.running&&Date.now()>=state.end){state.running=false;state.xp+=25;state.coins+=1200;state.mood=clamp(state.mood+8);state.bond=clamp(state.bond+3);state.tasks[0][1]=true;notice='行动完成：+25 XP，+1200 LMD；宠物为你加油！';while(state.xp>=state.level*100){state.xp-=state.level*100;state.level++}save()}render()}
+function render(){day.textContent=state.day;level.textContent=`LV.${String(state.level).padStart(2,'0')}`;coins.textContent=`LMD ${String(state.coins).padStart(6,'0')}`;let h='';
+ if(screen===0){let done=state.tasks.filter(x=>x[1]).length;h=`<div class=status><span>PRTS ONLINE</span><span>任务 ${done}/3</span></div><div class=mood>宠物心情 ${state.mood}%<div class=bar><i style="width:${state.mood}%"></i></div></div><div class=menu>${menu.map((x,i)=>`<div class="item ${i===cursor?'selected':''}">${i===cursor?'▶':'　'} ${x}</div>`).join('')}</div>`}
+ if(screen===1){let sec=state.running?Math.max(0,Math.ceil((state.end-Date.now())/1000)):state.minutes*60;h=`<h2>FOCUS OPERATION // 专注行动</h2><div class=clock>${String(sec/60|0).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}</div><div class=hint>${state.running?'按 OK 中止行动':'上下调整时长 · OK 开始'}</div>`}
+ if(screen===2)h=`<h2>DAILY MISSIONS // 每日任务</h2><div class=tasks>${state.tasks.map((x,i)=>`<div class="item ${i===cursor?'selected':''}">${i===cursor?'▶':'　'} [${x[1]?'×':' '}] ${x[0]}</div>`).join('')}</div>`;
+ if(screen===3)h='<h2>FIELD EVENT // 区域事件</h2><div class=clock style="font-size:24px">等待扫描</div><div class=hint>按 OK 扫描当前区域</div>';
+ if(screen===4){let face=state.energy<20?'😴':state.hunger<25?'🥺':state.mood>75?'🥰':'🐛';let acts=['喂食 · 100 LMD','玩耍','休息','探索'];h=`<h2>PET TERMINAL // 宠物终端</h2><div class=pet>${face}</div><div class=petname>${state.petName} · ${petStage()}</div><div class=stats><div class=stat>心情 ${state.mood}%</div><div class=stat>饱食 ${state.hunger}%</div><div class=stat>精力 ${state.energy}%</div><div class=stat>亲密 ${state.bond}%</div></div><div class=actions>${acts.map((x,i)=>`<div class="item ${i===cursor?'selected':''}">${x}</div>`).join('')}</div>`}
+ if(screen===5)h=`<h2>OPERATOR STATUS // 干员状态</h2><div class=item>等级：${state.level}<br><br>XP：${state.xp}/${state.level*100}<br><br>连续：${state.streak} 天<br><br>宠物：${petStage()}（成长 ${state.petXp}）<br><br>任务：${state.tasks.filter(x=>x[1]).length}/3</div>`;
+ if(screen===6)h='<h2>EXIT PROGRAM // 退出程序</h2><div class=clock style="font-size:24px;margin-top:120px">结束本次终端会话？</div><div class=hint>按 OK 保存并退出<br><br>按 BACK 取消</div>';
+ app.innerHTML=h+(notice?`<div class=notice>PRTS&gt; ${notice}</div>`:'')}
+function petAction(i){if(i===0){if(state.coins<100)return notice='龙门币不足，无法购买口粮。';state.coins-=100;state.hunger=clamp(state.hunger+28);state.mood=clamp(state.mood+3);notice='小岩吃得很开心。'}if(i===1){if(state.energy<12)return notice='小岩太累了，需要先休息。';state.energy=clamp(state.energy-12);state.mood=clamp(state.mood+15);state.bond=clamp(state.bond+5);state.petXp+=3;notice='你们玩了一会儿，亲密度提升。'}if(i===2){state.energy=clamp(state.energy+30);state.hunger=clamp(state.hunger-5);notice='小岩缩成一团睡着了。'}if(i===3){if(state.energy<25||state.hunger<20)return notice='当前状态不适合探索。';state.energy-=25;state.hunger-=12;let gain=50+Math.floor(Math.random()*251);state.coins+=gain;state.petXp+=8;state.bond=clamp(state.bond+3);notice=`探索归来，带回 ${gain} LMD！`}}
+function runEvent(){let e=events[Math.random()*events.length|0];state.coins+=(e.coins||0);state.mood=clamp(state.mood+(e.mood||0));state.energy=clamp(state.energy+(e.energy||0));state.bond=clamp(state.bond+(e.bond||0));state.petXp+=(e.petXp||0);let reward=[];if(e.coins)reward.push(`+${e.coins} LMD`);if(e.mood)reward.push(`心情 +${e.mood}`);if(e.energy)reward.push(`精力 +${e.energy}`);if(e.bond)reward.push(`亲密 +${e.bond}`);if(e.petXp)reward.push(`成长 +${e.petXp}`);notice=e.text+(reward.length?`（${reward.join('，')}）`:'')}
+function exitProgram(){save();app.innerHTML='<div class=clock style="font-size:25px;margin-top:150px;color:#73f4c7">PRTS SESSION CLOSED</div><div class=hint>进度已安全保存<br><br>现在可以关闭此页面</div>';document.querySelector('.keys').style.pointerEvents='none';document.querySelector('.keys').style.opacity='.35';document.querySelector('footer').textContent='TERMINAL OFFLINE';setTimeout(()=>window.close(),700)}
+function press(k){notice='';if(k==='back'){if(screen===0)return;screen=0;cursor=0}else if(screen===0){if(k==='up')cursor=(cursor+menu.length-1)%menu.length;if(k==='down')cursor=(cursor+1)%menu.length;if(k==='ok'){screen=cursor+1;cursor=0}}else if(screen===1){if(!state.running&&k==='up')state.minutes=Math.min(60,state.minutes+5);if(!state.running&&k==='down')state.minutes=Math.max(5,state.minutes-5);if(k==='ok'){state.running=!state.running;if(state.running)state.end=Date.now()+state.minutes*60000;notice=state.running?'行动已开始。':'行动已中止。'}}else if(screen===2){if(k==='up')cursor=(cursor+2)%3;if(k==='down')cursor=(cursor+1)%3;if(k==='ok')state.tasks[cursor][1]=!state.tasks[cursor][1]}else if(screen===3&&k==='ok'){runEvent()}else if(screen===4){if(k==='up')cursor=(cursor+3)%4;if(k==='down')cursor=(cursor+1)%4;if(k==='ok')petAction(cursor)}else if(screen===6&&k==='ok'){exitProgram();return}save();render()}
+document.querySelectorAll('button').forEach(b=>b.onclick=()=>press(b.dataset.key));addEventListener('keydown',e=>{let k={w:'up',W:'up',s:'down',S:'down',Enter:'ok',q:'back',Q:'back',Escape:'back'}[e.key];if(k){e.preventDefault();press(k)}});render();setInterval(tick,250);
+</script>
+</body></html>

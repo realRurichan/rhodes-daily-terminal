@@ -26,7 +26,22 @@ jobs:
         working-directory: ${{ runner.temp }}/buildroot
         run: |
           make rhodesisland_epass_defconfig
-          make toolchain -j"$(nproc)"
+          make toolchain libdrm -j"$(nproc)"
+      - name: Fetch official application HAL
+        run: |
+          git clone --depth 1 https://github.com/rhodesepass/epass-applications.git "$RUNNER_TEMP/epass-applications"
+          python3 tools/normalize_crlf_tree.py "$RUNNER_TEMP/epass-applications"
+      - name: Build ARM application package
+        run: |
+          cmake -S . -B build-device \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE="$RUNNER_TEMP/buildroot/output/host/share/buildroot/toolchainfile.cmake" \
+            -DEPASS_NATIVE=ON \
+            -DEPASS_APPLICATIONS_ROOT="$RUNNER_TEMP/epass-applications" \
+            -DBUILD_TESTING=OFF
+          cmake --build build-device --parallel
+          file build-device/daily_terminal
+          OUT_DIR="$RUNNER_TEMP/device-package" sh tools/package_app.sh build-device/daily_terminal
       - name: Archive relocatable SDK
         working-directory: ${{ runner.temp }}/buildroot
         run: |
@@ -44,5 +59,6 @@ jobs:
           path: |
             ${{ runner.temp }}/epass-arm-sdk.tar.gz
             ${{ runner.temp }}/epass-arm-sdk.tar.gz.sha256
+            ${{ runner.temp }}/device-package/*.tar.gz
           if-no-files-found: error
           retention-days: 7
