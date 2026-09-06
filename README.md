@@ -12,7 +12,7 @@ cmake --build build --config Release
 ./build/Release/daily_terminal.exe
 ```
 
-按键：`W` 上、`S` 下、`Enter` 确认、`Q` 返回/退出。存档默认写入当前目录的 `daily_terminal.sav`。
+按键：`KEY1` 上/上一项、`KEY2` 下/下一项、`KEY3` 确认、`KEY4` 返回。桌面终端演示可直接按数字键 `1`、`2`、`3`、`4`。存档默认写入当前目录的 `daily_terminal.sav`。
 
 ## 通行证原生 DRM 版
 

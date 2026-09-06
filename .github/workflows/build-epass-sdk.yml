@@ -26,7 +26,7 @@ jobs:
         working-directory: ${{ runner.temp }}/buildroot
         run: |
           make rhodesisland_epass_defconfig
-          make toolchain libdrm -j"$(nproc)"
+          make toolchain libdrm freetype epass-fonts -j"$(nproc)"
       - name: Fetch official application HAL
         run: |
           git clone --depth 1 https://github.com/rhodesepass/epass-applications.git "$RUNNER_TEMP/epass-applications"

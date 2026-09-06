@@ -15,6 +15,8 @@ if(EPASS_NATIVE)
   endif()
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(LIBDRM REQUIRED libdrm)
+  pkg_check_modules(FREETYPE REQUIRED freetype2)
+  pkg_check_modules(EPASS_FONTS QUIET epass-fonts)
   add_subdirectory("${EPASS_APPLICATIONS_ROOT}/hal" "${CMAKE_BINARY_DIR}/epass-hal")
   add_subdirectory("${EPASS_APPLICATIONS_ROOT}/applications/common/epass_game"
                    "${CMAKE_BINARY_DIR}/epass-game")
@@ -26,14 +28,22 @@ endif()
 
 add_executable(daily_terminal
   src/main.c
-  src/app.c
+  src/app_ui.c
   src/storage.c
   ${DAILY_TERMINAL_PLATFORM}
 )
 target_include_directories(daily_terminal PRIVATE include)
 if(EPASS_NATIVE)
   target_compile_definitions(daily_terminal PRIVATE EPASS_NATIVE=1)
-  target_link_libraries(daily_terminal PRIVATE epass_game)
+  target_include_directories(daily_terminal PRIVATE ${FREETYPE_INCLUDE_DIRS})
+  target_compile_options(daily_terminal PRIVATE ${FREETYPE_CFLAGS_OTHER})
+  target_link_libraries(daily_terminal PRIVATE epass_game ${FREETYPE_LIBRARIES})
+  if(EPASS_FONTS_FOUND)
+    pkg_get_variable(EPASS_BODY_FONT epass-fonts font_body)
+    if(EPASS_BODY_FONT)
+      target_compile_definitions(daily_terminal PRIVATE DT_FONT_PATH="${EPASS_BODY_FONT}")
+    endif()
+  endif()
 endif()
 
 if(MSVC)
@@ -46,7 +56,7 @@ include(CTest)
 if(BUILD_TESTING)
   add_executable(daily_terminal_tests
     tests/test_app.c
-    src/app.c
+    src/app_ui.c
     src/storage.c
   )
   target_include_directories(daily_terminal_tests PRIVATE include)

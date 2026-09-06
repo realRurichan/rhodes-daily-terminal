@@ -43,10 +43,10 @@ void dt_platform_shutdown(DtPlatform *platform) {
 }
 
 static DtKey map_char(int c) {
-  if (c == 'w' || c == 'W') return DT_KEY_UP;
-  if (c == 's' || c == 'S') return DT_KEY_DOWN;
-  if (c == '\r' || c == '\n' || c == 'e' || c == 'E') return DT_KEY_OK;
-  if (c == 'q' || c == 'Q' || c == 27) return DT_KEY_BACK;
+  if (c == '1') return DT_KEY_UP;
+  if (c == '2') return DT_KEY_DOWN;
+  if (c == '3') return DT_KEY_OK;
+  if (c == '4') return DT_KEY_BACK;
   return DT_KEY_NONE;
 }
 
@@ -86,4 +86,3 @@ const char *dt_platform_data_path(void) {
   const char *path = getenv("EPASS_SAVE_PATH");
   return path ? path : "daily_terminal.sav";
 }
-

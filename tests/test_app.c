@@ -10,6 +10,12 @@ int main(void) {
   DtApp app;
   dt_app_init(&app, now);
   assert(app.save.level == 1);
+  assert(strcmp(app.save.language, "zh") == 0);
+  char frame[4096];
+  dt_app_render(&app, frame, sizeof(frame), now);
+  assert(strstr(frame, "2024-") == NULL);
+  assert(strstr(frame, "KEY1/2") != NULL);
+  assert(strstr(frame, "专注行动") != NULL);
   dt_app_handle(&app, DT_KEY_OK, now);
   assert(app.screen == DT_SCREEN_FOCUS);
   dt_app_handle(&app, DT_KEY_OK, now);
@@ -52,6 +58,14 @@ int main(void) {
   assert(app.save.coins >= coins_before_explore + 50);
   assert(app.save.coins <= coins_before_explore + 300);
   assert(app.save.pet_xp == 11);
+
+  app.screen = DT_SCREEN_LANGUAGE;
+  dt_app_handle(&app, DT_KEY_DOWN, now);
+  assert(strcmp(app.save.language, "en") == 0);
+  dt_app_render(&app, frame, sizeof(frame), now);
+  assert(strstr(frame, "ENGLISH") != NULL);
+  dt_app_handle(&app, DT_KEY_OK, now);
+  assert(app.screen == DT_SCREEN_HOME);
 
   app.screen = DT_SCREEN_EXIT;
   dt_app_handle(&app, DT_KEY_BACK, now);

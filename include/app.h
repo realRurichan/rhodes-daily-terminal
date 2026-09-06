@@ -14,6 +14,7 @@ typedef enum {
   DT_SCREEN_EVENT,
   DT_SCREEN_PET,
   DT_SCREEN_STATUS,
+  DT_SCREEN_LANGUAGE,
   DT_SCREEN_EXIT
 } DtScreen;
 
@@ -37,7 +38,8 @@ typedef struct {
   int focus_minutes;
   int focus_running;
   time_t focus_end;
-  char day[11];
+  /* Kept at 11 bytes so saves made by app_ver 3 remain binary-compatible. */
+  char language[11];
   DtTask tasks[DT_TASK_COUNT];
 } DtSave;
 
@@ -54,6 +56,6 @@ void dt_app_init(DtApp *app, time_t now);
 void dt_app_handle(DtApp *app, DtKey key, time_t now);
 void dt_app_tick(DtApp *app, time_t now);
 void dt_app_render(const DtApp *app, char *out, size_t capacity, time_t now);
-void dt_app_set_day(DtApp *app, time_t now);
+void dt_app_validate_settings(DtApp *app);
 
 #endif
