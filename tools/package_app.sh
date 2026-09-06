@@ -19,6 +19,7 @@ APP_DIR="$STAGE/rhodes-daily-terminal"
 mkdir -p "$APP_DIR" "$OUT_DIR"
 cp "$BINARY" "$APP_DIR/daily_terminal"
 cp "$ROOT/appconfig.json" "$APP_DIR/appconfig.json"
+cp "$ROOT/icon.png" "$APP_DIR/icon.png"
 chmod 755 "$APP_DIR/daily_terminal"
 
 PACKAGE="$OUT_DIR/rhodes-daily-terminal-v$VERSION.tar.gz"

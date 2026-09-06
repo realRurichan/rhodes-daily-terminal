@@ -6,5 +6,6 @@
   "type": "fg",
   "screens": ["360x640"],
   "executable": { "file": "daily_terminal" },
-  "description": "Bilingual focus, missions, field events and virtual pet terminal"
+  "description": "Bilingual focus, missions, field events and virtual pet terminal",
+  "icon": "icon.png"
 }

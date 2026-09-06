@@ -2,6 +2,7 @@
 import json
 import pathlib
 import stat
+import struct
 import sys
 import tarfile
 
@@ -23,6 +24,9 @@ def main() -> None:
         config_name = "rhodes-daily-terminal/appconfig.json"
         if config_name not in names:
             fail("appconfig.json is missing")
+        icon_name = "rhodes-daily-terminal/icon.png"
+        if icon_name not in names:
+            fail("icon.png is missing")
         config_file = archive.extractfile(config_name)
         if config_file is None:
             fail("appconfig.json is not a regular file")
@@ -43,6 +47,15 @@ def main() -> None:
         info = archive.getmember(executable_name)
         if not info.isfile() or not info.mode & stat.S_IXUSR:
             fail("declared executable must be a user-executable regular file")
+        icon_file = archive.extractfile(icon_name)
+        if icon_file is None:
+            fail("icon.png is not a regular file")
+        header = icon_file.read(24)
+        if len(header) != 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
+            fail("icon.png is not a PNG image")
+        width, height = struct.unpack(">II", header[16:24])
+        if (width, height) != (128, 128):
+            fail("icon.png must be 128x128")
     print(f"package valid: {package}")
 
 

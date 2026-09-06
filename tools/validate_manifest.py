@@ -11,5 +11,6 @@ assert isinstance(data["app_ver"], int) and data["app_ver"] > 0
 assert data["type"] == "fg"
 assert "360x640" in data["screens"]
 assert data["executable"]["file"] == "daily_terminal"
+assert data["icon"] == "icon.png"
 uuid.UUID(data["uuid"])
 print("manifest valid")

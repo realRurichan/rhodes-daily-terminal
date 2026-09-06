@@ -64,7 +64,7 @@ if(BUILD_TESTING)
 endif()
 
 install(TARGETS daily_terminal RUNTIME DESTINATION .)
-install(FILES appconfig.json DESTINATION .)
+install(FILES appconfig.json icon.png DESTINATION .)
 
 find_package(Python3 COMPONENTS Interpreter QUIET)
 if(BUILD_TESTING AND Python3_Interpreter_FOUND)
