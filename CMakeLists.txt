@@ -18,6 +18,9 @@ if(EPASS_NATIVE)
   add_subdirectory("${EPASS_APPLICATIONS_ROOT}/hal" "${CMAKE_BINARY_DIR}/epass-hal")
   add_subdirectory("${EPASS_APPLICATIONS_ROOT}/applications/common/epass_game"
                    "${CMAKE_BINARY_DIR}/epass-game")
+  # Upstream uses clock_gettime/usleep; musl hides them in strict C11 mode.
+  target_compile_definitions(hal_display PRIVATE _GNU_SOURCE)
+  target_compile_definitions(epass_game PRIVATE _GNU_SOURCE)
   set(DAILY_TERMINAL_PLATFORM src/platform_epass.c)
 endif()
 
