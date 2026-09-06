@@ -52,7 +52,8 @@ jobs:
           tar -czf "$RUNNER_TEMP/epass-arm-sdk.tar.gz" \
             --owner=0 --group=0 --numeric-owner \
             --transform='s#^output/host#epass-arm-sdk#' output/host
-          sha256sum "$RUNNER_TEMP/epass-arm-sdk.tar.gz" > "$RUNNER_TEMP/epass-arm-sdk.tar.gz.sha256"
+          (cd "$RUNNER_TEMP" && sha256sum epass-arm-sdk.tar.gz > epass-arm-sdk.tar.gz.sha256)
+          (cd "$RUNNER_TEMP/device-package" && sha256sum rhodes-daily-terminal-v*.tar.gz > rhodes-daily-terminal.sha256)
       - uses: actions/upload-artifact@v4
         with:
           name: epass-arm-sdk
@@ -60,5 +61,6 @@ jobs:
             ${{ runner.temp }}/epass-arm-sdk.tar.gz
             ${{ runner.temp }}/epass-arm-sdk.tar.gz.sha256
             ${{ runner.temp }}/device-package/*.tar.gz
+            ${{ runner.temp }}/device-package/*.sha256
           if-no-files-found: error
           retention-days: 7
